@@ -7,13 +7,13 @@ A selection of scripts for use with [Monitoring Agent](https://github.com/infraw
 
 To run the a script called `check_application-list.ps1` stored on the monitoring host against a monitored remote host...
 
-From the command line:
+...via the command line:
 
 ```
 /check_script_via_monitoring-agent.pl --template=application_whitelist --host=HostToCheck --port=9000 --username="test" --password="secret" --executable='C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe' --script=/lib/monitoring-plugins/remote-scripts/check_application_list.ps1 -- -command -
 ```
 
-Naemon Command and Service Definitions:
+...via Naemon (Command and Service Definitions):
 
 ```
 define command {
