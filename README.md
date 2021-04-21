@@ -3,7 +3,7 @@
 # monitoring-agent-scripts
 A selection of scripts for use with [Monitoring Agent](https://github.com/infraweavers/monitoring-agent)
 
-### `check_script_via_monitoring_agent.pl` by Example
+### **check_script_via_monitoring_agent.pl** by Example
 
 To run the a script called `check_application-list.ps1` stored on the monitoring host against a monitored remote host...
 
