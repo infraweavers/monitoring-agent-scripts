@@ -10,7 +10,7 @@ To run the a script called `check_application-list.ps1` stored on the monitoring
 ...via the command line:
 
 ```
-/check_script_via_monitoring-agent.pl --template=application_whitelist --host=HostToCheck --port=9000 --username="test" --password="secret" --executable='C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe' --script=/lib/monitoring-plugins/remote-scripts/check_application_list.ps1 -- -command -
+./check_script_via_monitoring-agent.pl --template=application_whitelist --host=HostToCheck --port=9000 --username="test" --password="secret" --executable='C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe' --script=/lib/monitoring-plugins/remote-scripts/check_application_list.ps1 -- -command -
 ```
 
 ...via Naemon (Command and Service Definitions):
