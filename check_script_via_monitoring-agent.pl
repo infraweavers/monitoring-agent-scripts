@@ -66,7 +66,7 @@ if($plugin->opts->certificate) {
 
 if( -e $plugin->opts->script.".minisig") {
 	my $signatureContent = read_file($plugin->opts->script.".minisig");
-	$input->{"signature"} = $signatureContent;
+	$input->{"stdinsignature"} = $signatureContent;
 }
 
 my $base64creds = encode_base64("$username" . ":" . "$password");
