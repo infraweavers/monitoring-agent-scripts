@@ -4,6 +4,8 @@ use JSON;
 use LWP::UserAgent;
 use Data::Dumper;
 use Monitoring::Plugin;
+use MIME::Base64;
+
 
 my $plugin = Monitoring::Plugin->new (
 	usage => '',
@@ -19,16 +21,20 @@ $plugin->add_arg(spec => 'insecure|i!', help => 'ignore TLS Certificate checks',
 $plugin->add_arg(spec => 'template|t=s', help => 'pnp4nagios template', required => 0);
 $plugin->add_arg(spec => 'hostname|h=s', help => 'hostname or ip', required => 1);
 $plugin->add_arg(spec => 'port|p=i', help => 'port number', required => 1);
-$plugin->add_arg(spec => 'certificate|c=s', help => 'certificate file', required => 0);
-$plugin->add_arg(spec => 'key|k=s', help => 'key file', required => 0);
 $plugin->add_arg(spec => 'username|u=s', help => 'username', required => 1);
 $plugin->add_arg(spec => 'password|p=s', help => 'password', required => 1);
 $plugin->add_arg(spec => 'executable|e=s', help => 'executable path', required => 1);
+$plugin->add_arg(spec => 'cacert|e=s', help => 'CA certificate', required => 0);
+$plugin->add_arg(spec => 'certificate|e=s', help => 'client certificate', required => 0);
+$plugin->add_arg(spec => 'key|e=s', help => 'client key', required => 0);
 
 $plugin->getopts;
 
 my $username = exists($ENV{'MONITORING_AGENT_USERNAME'}) ? $ENV{'MONITORING_AGENT_USERNAME'} : $plugin->opts->username;
 my $password = exists($ENV{'MONITORING_AGENT_PASSWORD'}) ? $ENV{'MONITORING_AGENT_PASSWORD'} : $plugin->opts->password;
+
+my $base64creds = encode_base64("$username" . ":" . "$password");
+chomp($base64creds);
 
 my $socket = $plugin->opts->hostname . ":" . $plugin->opts->port;
 
@@ -38,15 +44,6 @@ if($plugin->opts->insecure) {
 	$user_agent->ssl_opts(verify_hostname => 0, SSL_verify_mode => 0x00);	
 }
 
-if( -e $plugin->opts->certificate) {
-	if( ! -e $plugin->opts->key ) {
-		print "invalid key file.\n";
-		exit UNKNOWN;
-	}
-
-	$user_agent->ssl_opts(SSL_cert_file => $plugin->opts->certificate, SSL_key_file => $plugin->opts->key);
-}
-
 my $input = {
 	"path" => $plugin->opts->executable,
 	"args" => \@ARGV,
@@ -54,8 +51,17 @@ my $input = {
 
 alarm $plugin->opts->timeout;
 
+if($plugin->opts->cacert){
+	$user_agent->ssl_opts( "SSL_ca_file" => $plugin->opts->cacert );
+	if($plugin->opts->cert && $plugin->opts->key){
+		$user_agent->ssl_opts( "SSL_cert_file" => $plugin->opts->cert );
+		$user_agent->ssl_opts( "SSL_key_file" => $plugin->opts->key );	
+	}
+}
+
 my $response = $user_agent->post("https://$socket/v1/runscript",
 	'Content-Type'=> 'application/json',
+	'Authorization' => "Basic $base64creds",
 	Content => encode_json $input
 );
 
