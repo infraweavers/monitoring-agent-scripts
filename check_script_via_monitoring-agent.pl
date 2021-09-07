@@ -5,6 +5,7 @@ use LWP::UserAgent;
 use Data::Dumper;
 use Monitoring::Plugin;
 use File::Slurp;
+use MIME::Base64;
 
 my $plugin = Monitoring::Plugin->new (
 	usage => '',
@@ -20,6 +21,7 @@ $plugin->add_arg(spec => 'insecure|i!', help => 'ignore TLS Certificate checks',
 $plugin->add_arg(spec => 'template|t=s', help => 'pnp4nagios template', required => 0);
 $plugin->add_arg(spec => 'hostname|h=s', help => 'hostname or ip', required => 1);
 $plugin->add_arg(spec => 'port|p=i', help => 'port number', required => 1);
+$plugin->add_arg(spec => 'cacert|e=s', help => 'CA certificate', required => 0);
 $plugin->add_arg(spec => 'certificate|c=s', help => 'certificate file', required => 0);
 $plugin->add_arg(spec => 'key|k=s', help => 'key file', required => 0);
 $plugin->add_arg(spec => 'username|u=s', help => 'username', required => 0);
@@ -34,10 +36,12 @@ my $password = exists($ENV{'MONITORING_AGENT_PASSWORD'}) ? $ENV{'MONITORING_AGEN
 
 my $socket = $plugin->opts->hostname . ":" . $plugin->opts->port;
 
-$user_agent->credentials($socket, "Access restricted", $username, $password);
-
 if($plugin->opts->insecure) {
 	$user_agent->ssl_opts(verify_hostname => 0, SSL_verify_mode => 0x00);	
+}
+
+if($plugin->opts->cacert){
+	$user_agent->ssl_opts( "SSL_ca_file" => $plugin->opts->cacert );
 }
 
 my $scriptContent = read_file($plugin->opts->script);
@@ -48,13 +52,16 @@ my $input = {
 	"stdin" => $scriptContent
 };
 
-if( -e $plugin->opts->certificate) {
+if($plugin->opts->certificate) {
 	if( ! -e $plugin->opts->key ) {
 		print "invalid key file.\n";
 		exit UNKNOWN;
 	}
 
-	$user_agent->ssl_opts(SSL_cert_file => $plugin->opts->certificate, SSL_key_file => $plugin->opts->key);
+	$user_agent->ssl_opts(
+		SSL_cert_file => $plugin->opts->certificate, 
+		SSL_key_file => $plugin->opts->key
+	);
 }
 
 if( -e $plugin->opts->script.".minisig") {
@@ -62,10 +69,14 @@ if( -e $plugin->opts->script.".minisig") {
 	$input->{"signature"} = $signatureContent;
 }
 
+my $base64creds = encode_base64("$username" . ":" . "$password");
+chomp($base64creds);
+
 alarm $plugin->opts->timeout;
 
 my $response = $user_agent->post("https://$socket/v1/runscriptstdin",
 	'Content-Type'=> 'application/json',
+	'Authorization' => "Basic $base64creds",
 	Content => encode_json $input
 );
 
