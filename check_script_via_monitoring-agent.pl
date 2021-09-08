@@ -46,6 +46,13 @@ if($plugin->opts->cacert){
 
 my $scriptContent = read_file($plugin->opts->script);
 
+if($plugin->opts->script =~ /.ps1$/) {
+	if((substr($scriptContent, -4) ne "\r\n\r\n")) and (substr($scriptContent, -2) ne "\n\n")) {
+		print "Invalid powershell script, the script must end with two blank lines\n";
+		exit UNKNOWN;	
+	}
+}
+
 my $input = {
 	"path" => $plugin->opts->executable,
 	"args" => \@ARGV,
