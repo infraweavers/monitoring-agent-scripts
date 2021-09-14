@@ -44,7 +44,7 @@ if($plugin->opts->cacert){
 	$user_agent->ssl_opts( "SSL_ca_file" => $plugin->opts->cacert );
 }
 
-my $scriptContent = read_file($plugin->opts->script);
+my $scriptContent = read_file($plugin->opts->script, { binmode => ':bytes' });
 
 if($plugin->opts->script =~ /.ps1$/) {
 	if((substr($scriptContent, -4) ne "\r\n\r\n") and (substr($scriptContent, -2) ne "\n\n")) {
@@ -84,7 +84,7 @@ alarm $plugin->opts->timeout;
 my $response = $user_agent->post("https://$socket/v1/runscriptstdin",
 	'Content-Type'=> 'application/json',
 	'Authorization' => "Basic $base64creds",
-	Content => encode_json $input
+	Content => to_json $input
 );
 
 if ($response->code ne 200) {
