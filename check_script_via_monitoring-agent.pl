@@ -12,7 +12,7 @@ my $plugin = Monitoring::Plugin->new (
 	plugin => $0,
 	shortname => 'Check via monitoring-agent',
 	blurb => 'Checks via monitoring-agent',
-	timeout => 10
+	timeout => "10s"
 );
 
 my $user_agent = LWP::UserAgent->new();
@@ -28,6 +28,7 @@ $plugin->add_arg(spec => 'username|u=s', help => 'username', required => 0);
 $plugin->add_arg(spec => 'password|p=s', help => 'password', required => 0);
 $plugin->add_arg(spec => 'executable|e=s', help => 'executable path', required => 1);
 $plugin->add_arg(spec => 'script|s=s', help => 'script location', required => 1);
+$plugin->add_arg(spec => 'timeout|t=s', help => 'timeout (e.g. 10s)', required => 0);
 
 $plugin->getopts;
 
@@ -56,7 +57,8 @@ if($plugin->opts->script =~ /.ps1$/) {
 my $input = {
 	"path" => $plugin->opts->executable,
 	"args" => \@ARGV,
-	"stdin" => $scriptContent
+	"stdin" => $scriptContent,
+	"timeout" => $plugin->opts->timeout
 };
 
 if($plugin->opts->certificate) {
