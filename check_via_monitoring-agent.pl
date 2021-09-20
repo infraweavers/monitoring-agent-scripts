@@ -53,8 +53,8 @@ alarm $plugin->opts->timeout;
 
 if($plugin->opts->cacert){
 	$user_agent->ssl_opts( "SSL_ca_file" => $plugin->opts->cacert );
-	if($plugin->opts->cert && $plugin->opts->key){
-		$user_agent->ssl_opts( "SSL_cert_file" => $plugin->opts->cert );
+	if($plugin->opts->certificate && $plugin->opts->key){
+		$user_agent->ssl_opts( "SSL_cert_file" => $plugin->opts->certificate );
 		$user_agent->ssl_opts( "SSL_key_file" => $plugin->opts->key );	
 	}
 }
