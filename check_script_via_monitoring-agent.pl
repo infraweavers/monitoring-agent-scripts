@@ -12,7 +12,7 @@ my $plugin = Monitoring::Plugin->new (
 	plugin => $0,
 	shortname => 'Check via monitoring-agent',
 	blurb => 'Checks via monitoring-agent',
-	timeout => "10s"
+	timeout => "10s",
 );
 
 my $user_agent = LWP::UserAgent->new();
