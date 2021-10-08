@@ -59,7 +59,7 @@ if($plugin->opts->cacert){
 	}
 }
 
-my $response = $user_agent->post("https://$socket/v1/runscript",
+my $response = $user_agent->post("https://$socket/v1/runexecutable",
 	'Content-Type'=> 'application/json',
 	'Authorization' => "Basic $base64creds",
 	Content => encode_json $input
